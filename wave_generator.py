@@ -22,7 +22,6 @@ square_wave = np.concatenate([
 
 # Heartbeat wave
 heartbeat_wave = np.full(samples_per_wave, 256)
-
 def triangle_pulse(width, height, invert=False):
     x = np.linspace(0, height, width // 2, endpoint=False)
     y = np.linspace(height, 0, width // 2, endpoint=True)
@@ -46,13 +45,12 @@ waveform = np.concatenate([sine_wave, square_wave, triangle_wave, heartbeat_wave
 waveform = waveform.astype(int)
 
 
-# Write to txt file
+# Write to file
 with open('wave.txt', 'w') as f:
     for v in waveform:
         f.write(f'{v:03x}\n')
 
-# # Plot to verify shapes (correct slicing)
-# plt.figure(figsize=(12, 6))
+# # Plot to verify shapes
 # plt.plot(waveform[:samples_per_wave], label='Sine')
 # plt.plot(waveform[samples_per_wave:2*samples_per_wave], label='Triangle')
 # plt.plot(waveform[2*samples_per_wave:3*samples_per_wave], label='Square')

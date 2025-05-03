@@ -1,58 +1,53 @@
 import sys
 import time
+import threading
 from pyftdi.spi import SpiController
 
-# runs in a loop; take command line input to change --> store in variable (starts with a default)
+# Shared variable and lock
+current_command = bytes([0x0])
+command_lock = threading.Lock()
 
 def initializeSPI():
     """
     Initializes SPI controller
-
-    Returns:
-        A controller
     """
     spi = SpiController()
     spi.configure('ftdi://::/1')  # Use first FTDI device found
-
     controller = spi.get_port(cs=0, freq=100_000, mode=0)  # CS0, 100 kHz, SPI mode 0
     return spi, controller
 
-def handleInput():
+def input_thread():
     """
-    Handles user input to change the frequency options
-
-    Returns:
-        The bytes to send
+    Thread that waits for user input and updates the command
     """
-    # input should be in hex
-    user_input = input("Enter hex string (e.g. DEADBEEF): ")
-    try:
-        tx_bytes = bytes.fromhex(user_input)
-    except ValueError:
-        print("Invalid hex string")
-        exit(1)
-    # parse input (TODO: correspond to options later; for now actually use input from CLI)
-
-    print(f"Input is: {tx_bytes}")
-    return tx_bytes
+    global current_command
+    while True:
+        user_input = input("Enter 1-digit hex command (0-F): ").strip().lower()
+        if len(user_input) != 1 or user_input not in "0123456789abcdef":
+            print("Invalid input. Enter a single hex digit (0-F).")
+            continue
+        with command_lock:
+            # Send the 4-bit command in the lower nibble (e.g., 0x0A for command A)
+            current_command = bytes([int(user_input, 16)])
+            print(f"New command set: {current_command.hex()}")
 
 def main():
-    # Initialize SPI
+    global current_command
     spi, controller = initializeSPI()
 
-    tx_bytes = 0x00 # set to a default 
-    tx_bytes = handleInput()
+    # Start the input thread
+    threading.Thread(target=input_thread, daemon=True).start()
 
     try:
         while True:
-            # Send the SPI command and receive the response
-            rx_bytes = controller.exchange(tx_bytes, duplex=True)
-            print(f"Sent: {tx_bytes.hex()} | Received: {rx_bytes.hex()}")
-            time.sleep(1)  # Send every second, adjust for faster/slower
+            with command_lock:
+                tx = current_command
+            rx = controller.exchange(tx, duplex=True)
+            print(f"Sent: {tx.hex()} | Received: {rx.hex()}")
+            time.sleep(1)  # Adjust for faster/slower sending
     except KeyboardInterrupt:
-        print("\nContinuous sending stopped by user.")
-
-    spi.terminate()
+        print("\nStopped by user.")
+        spi.terminate()
 
 if __name__ == "__main__":
     main()

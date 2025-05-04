@@ -21,7 +21,8 @@ module top(
 );
 
     logic [9:0] data;
-    logic [3:0] selector;
+    logic [3:0] selector = 4'b0000;
+    logic [3:0] prev_selector;
     logic selector_sig;
     logic clk_out;
 
@@ -30,9 +31,13 @@ module top(
         .spi_clk        (_31b),
         .mosi           (_29b),
         .cs             (_37a),
-        .command        (selector),
+        .command        (prev_selector),
         .command_signal (selector_sig)
     )
+
+    always_ff @(posedge selector_sig) begin
+        selector <= prev_selector;
+    end
 
     var_clk var_clk(
         .clk            (clk),

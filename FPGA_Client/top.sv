@@ -28,12 +28,13 @@ module top(
 
     spi_client spi(
         .clk            (clk),
+        .rst            (rst),
         .spi_clk        (_31b),
         .mosi           (_29b),
         .cs             (_37a),
         .command        (prev_selector),
         .command_signal (selector_sig)
-    )
+    );
 
     always_ff @(posedge selector_sig) begin
         selector <= prev_selector;
@@ -41,14 +42,16 @@ module top(
 
     var_clk var_clk(
         .clk            (clk),
+        .rst            (rst),
         .selector       (selector),
         .clk_out        (clk_out)
-    )
+    );
 
     memory #(
-        .INIT_FILE      ("sine.txt")
+        .INIT_FILE      ("wave.txt")
     ) u1 (
         .clk            (clk_out), 
+        .rst            (rst),
         .selector       (selector),
         .read_data      (data)
     );

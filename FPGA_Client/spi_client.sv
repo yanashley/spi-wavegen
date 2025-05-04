@@ -47,7 +47,7 @@ module spi_client(
                     bit_count <= 2'd0;
                 end
 
-                if (sclk_rising) begin // if SPI clk on a rising edge
+                if (sclk_rising && bit_count < 2'd4) begin // if SPI clk on a rising edge + only take first 4 bits
                     shift_reg <= {shift_reg[2:0], mosi};  // Shift in 1 bit
                     bit_count <= bit_count + 2'd1;
 

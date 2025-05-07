@@ -4,7 +4,6 @@
 
 module top(
     input logic     clk,
-    input logic     rst,
     input logic     _31b,
     input logic     _29b,
     input logic     _37a,
@@ -30,7 +29,6 @@ module top(
 
     spi_client spi(
         .clk            (clk),
-        .rst            (rst),
         .spi_clk        (_31b),
         .mosi           (_29b),
         .cs             (_37a),

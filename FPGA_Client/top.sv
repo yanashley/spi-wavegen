@@ -51,7 +51,6 @@ module top(
         .INIT_FILE      ("wave.txt")
     ) u1 (
         .clk            (clk_out), 
-        .rst            (rst),
         .selector       (selector),
         .read_data      (data)
     );

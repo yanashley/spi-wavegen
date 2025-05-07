@@ -36,16 +36,22 @@ module top(
         .command_signal (selector_sig)
     );
 
-    always_ff @(posedge selector_sig) begin
-        selector <= prev_selector[7:4];
-        mem_rst <= 1'b1;
-        rst_counter <= 1'b0;
-    end
+    // always_ff @(posedge selector_sig) begin
+    //     selector <= prev_selector[7:4];
+    //     mem_rst <= 1'b1;
+    //     rst_counter <= 1'b0;
+    // end
 
     always_ff @(posedge clk) begin
-        if (mem_rst && !rst_counter) begin
+        if (selector_sig) begin
+            selector <= prev_selector[7:4];
+            mem_rst <= 1'b1;
+            rst_counter <= 1'b0;
+        end
+        else if (mem_rst && !rst_counter) begin
             rst_counter <= 1'b1;
-        end else if (mem_rst && rst_counter) begin
+        end 
+        else if (mem_rst && rst_counter) begin
             rst_counter <= 1'b0;
             mem_rst <= 1'b0;
         end

@@ -1,6 +1,5 @@
 module spi_client(
     input logic     clk, // must be 1.5 x faster than controller (curently at 100 kHz)
-    input logic     rst,
     input logic     spi_clk, // can make this _31b
     input logic     mosi,    // can make this _29b
     input logic     cs,      // can make this _37a  

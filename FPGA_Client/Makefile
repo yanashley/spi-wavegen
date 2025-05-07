@@ -1,21 +1,14 @@
-SIM ?= icarus
-TOPLEVEL_LANG ?= verilog
-VERILOG_SOURCES += $(PWD)/top.sv
+filename = top
+pcf_file = common/iceBlinkPico.pcf
 
-TOPLEVEL = top
-MODULE = test_top
+build:
+	yosys -p "synth_ice40 -top top -json $(filename).json" $(filename).sv
+	nextpnr-ice40 --up5k --package sg48 --json $(filename).json --pcf $(pcf_file) --asc $(filename).asc
+	icepack $(filename).asc $(filename).bin
 
+prog: #for sram
+	dfu-util --device 1d50:6146 --alt 0 -D $(filename).bin -R
 
-# Use a more direct approach for Mac with conda environment
-PYTHON_BIN ?= /Users/oscarbao/comparch/oss-cad-suite/bin/tabbypy3
-COCOTB_HDL_TIMEUNIT = 1ns
-COCOTB_HDL_TIMEPRECISION = 1ps
+clean:
+	rm -rf $(filename).blif $(filename).asc $(filename).json $(filename).bin
 
-# COMPILE_ARGS += -P $(TOPLEVEL).INIT_FILE=\"rv32i_test.txt\"
-
-# Include the standard Icarus makefile configuration
-include $(shell cocotb-config --makefiles)/Makefile.sim
-
-# # Optional target to clean up
-# clean:
-# 	rm -rf __pycache__ *.vcd *.vvp sim_build

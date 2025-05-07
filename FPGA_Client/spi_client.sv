@@ -20,11 +20,11 @@ module spi_client(
             cs_sync   <= 2'b11;
         end else begin
             spi_clk_sync <= {spi_clk_sync[0], spi_clk}; // pass SPI clk in
-            cs_sync   <= {cs_sync[0], cs_n};
+            cs_sync   <= {cs_sync[0], cs};
         end
     end
 
-    assign spi_clk_rising = (sclk_sync == 2'b01); // 01 referring to rising edge
+    assign spi_clk_rising = (spi_clk_sync == 2'b01); // 01 referring to rising edge
 
     // Shift register and bit counter for 4-bit command
     logic [3:0] shift_reg;
@@ -47,7 +47,7 @@ module spi_client(
                     bit_count <= 2'd0;
                 end
 
-                if (sclk_rising && bit_count < 2'd4) begin // if SPI clk on a rising edge + only take first 4 bits
+                if (spi_clk_rising && bit_count < 2'd4) begin // if SPI clk on a rising edge + only take first 4 bits
                     shift_reg <= {shift_reg[2:0], mosi};  // Shift in 1 bit
                     bit_count <= bit_count + 2'd1;
 

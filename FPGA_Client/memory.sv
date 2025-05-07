@@ -1,7 +1,7 @@
 module memory #(
     parameter INIT_FILE = ""
 )(
-    input logic     clk,
+    input logic     clk, rst, 
     input logic     [3:0] selector,
     output logic    [9:0] read_data
 );
@@ -16,7 +16,7 @@ module memory #(
 
     always_ff @(posedge clk) begin
         // Different waveforms
-        case (selector[1:0])
+        case (selector[3:2])
         2'b00: begin
             read_data <= sample_memory[read_address];
         end
@@ -33,8 +33,13 @@ module memory #(
         endcase
     end
 
-    always_ff @(posedge clk) begin
+    always_ff @(posedge clk or posedge rst) begin
+        if (rst) begin
+            read_address <= 0;
+        end 
+        else begin
         read_address <= read_address + 1;
+        end
     end
 
 endmodule

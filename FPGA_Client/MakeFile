@@ -7,8 +7,8 @@ MODULE = test_top
 
 
 # Use a more direct approach for Mac with conda environment
-PYTHON_BIN ?= /usr/local/Caskroom/miniconda/base/envs/comparch/bin/python
-COCOTB_HDL_TIMEUNIT = 1nsc
+PYTHON_BIN ?= /Users/oscarbao/comparch/oss-cad-suite/bin/tabbypy3
+COCOTB_HDL_TIMEUNIT = 1ns
 COCOTB_HDL_TIMEPRECISION = 1ps
 
 # COMPILE_ARGS += -P $(TOPLEVEL).INIT_FILE=\"rv32i_test.txt\"

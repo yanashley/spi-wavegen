@@ -25,7 +25,7 @@ module top(
     logic [7:0] prev_selector;
     logic rst_counter = 1'b0;
     logic selector_sig;
-    logic clk_out;
+    logic clk_out, mem_rst;
 
     spi_client spi(
         .clk            (clk),
@@ -39,21 +39,21 @@ module top(
 
     always_ff @(posedge selector_sig) begin
         selector <= prev_selector[7:4];
-        rst <= 1'b1;
+        mem_rst <= 1'b1;
     end
 
     always_ff @(posedge clk) begin
-        if (rst && !rst_counter) begin
+        if (mem_rst && !rst_counter) begin
             rst_counter <= 1'b1;
-        end else if (rst && rst_counter) begin
+        end else if (mem_rst && rst_counter) begin
             rst_counter <= 1'b0;
-            rst <= 1'b0;
+            mem_rst <= 1'b0;
         end
     end
 
     var_clk var_clk(
         .clk            (clk),
-        .rst            (rst),
+        .rst            (mem_rst),
         .selector       (selector),
         .clk_out        (clk_out)
     );
@@ -62,7 +62,7 @@ module top(
         .INIT_FILE      ("wave.txt")
     ) u1 (
         .clk            (clk_out), 
-        .rst            (rst),
+        .rst            (mem_rst),
         .selector       (selector),
         .read_data      (data)
     );

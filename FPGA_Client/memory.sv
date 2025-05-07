@@ -33,7 +33,7 @@ module memory #(
         endcase
     end
 
-    always_ff @(posedge clk or posedge rst) begin
+    always_ff @(posedge clk) begin
         if (rst) begin
             read_address <= 0;
         end 

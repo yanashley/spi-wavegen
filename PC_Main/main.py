@@ -13,7 +13,7 @@ def initializeSPI():
     """
     spi = SpiController()
     spi.configure('ftdi://::/1')  # Use first FTDI device found
-    controller = spi.get_port(cs=0, freq=100_000, mode=0)  # CS0, 100 kHz, SPI mode 0
+    controller = spi.get_port(cs=0, freq=1_000_000, mode=0)  # CS0, 1 MHz, SPI mode 0
     return spi, controller
 
 def input_thread():
@@ -22,13 +22,14 @@ def input_thread():
     """
     global current_command
     while True:
-        user_input = input("Enter 1-digit hex command (0-F): ").strip().lower()
-        if len(user_input) != 1 or user_input not in "0123456789abcdef":
-            print("Invalid input. Enter a single hex digit (0-F).")
+        user_input = input("Enter 4-bit binary command (e.g., 0101): ").strip()
+        if len(user_input) != 4 or any(c not in '01' for c in user_input):
+            print("Invalid input. Enter exactly 4 bits (e.g., 0101).")
             continue
+        nibble = int(user_input, 2)
+        full_byte = nibble << 4  # Move to upper nibble
         with command_lock:
-            # Send the 4-bit command in the lower nibble (e.g., 0x0A for command A)
-            current_command = bytes([int(user_input, 16)])
+            current_command = bytes([full_byte])
             print(f"New command set: {current_command.hex()}")
 
 def main():
@@ -44,7 +45,7 @@ def main():
                 tx = current_command
             rx = controller.exchange(tx, duplex=True)
             print(f"Sent: {tx.hex()} | Received: {rx.hex()}")
-            time.sleep(1)  # Adjust for faster/slower sending
+            time.sleep(1)
     except KeyboardInterrupt:
         print("\nStopped by user.")
         spi.terminate()

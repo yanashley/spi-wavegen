@@ -3,6 +3,7 @@
 # Tactile switches (active low)
 set_io -nowarn BOOT     9
 set_io -nowarn SW       38
+set_io -nowarn rst      21
 
 # LEDs (active low)
 set_io -nowarn LED      42

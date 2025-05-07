@@ -25,7 +25,8 @@ module top(
     logic [7:0] prev_selector;
     logic rst_counter = 1'b0;
     logic selector_sig;
-    logic clk_out, mem_rst;
+    logic clk_out;
+    logic mem_rst = 1'b0;
 
     spi_client spi(
         .clk            (clk),
@@ -40,6 +41,7 @@ module top(
     always_ff @(posedge selector_sig) begin
         selector <= prev_selector[7:4];
         mem_rst <= 1'b1;
+        rst_counter <= 1'b0;
     end
 
     always_ff @(posedge clk) begin

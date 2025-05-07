@@ -5,8 +5,8 @@ module spi_client(
     input logic     mosi,    // can make this _29b
     input logic     cs,      // can make this _37a  
 
-    output logic [3:0] command,
-    output logic    command_signal
+    output logic [7:0] command,
+    output logic command_signal
 );
 
     // Synchronize external SPI signals to system clock
@@ -26,39 +26,40 @@ module spi_client(
 
     assign spi_clk_rising = (spi_clk_sync == 2'b01); // 01 referring to rising edge
 
-    // Shift register and bit counter for 4-bit command
-    logic [3:0] shift_reg;
-    logic [1:0] bit_count;
+    // Shift register and bit counter for full byte command
+    logic [7:0] shift_reg;
+    logic [3:0] bit_count;
     logic receiving;
 
     always_ff @(posedge clk) begin
         if (rst) begin
-            shift_reg <= 4'd0;
-            bit_count <= 2'd0;
+            shift_reg <= 8'b0;
+            bit_count <= 4'd0;
+            command       <= 8'b0;
             command_signal <= 1'b0;
-            command       <= 4'd0;
             receiving <= 1'b0;
         end else begin
             command_signal <= 1'b0;
 
             if (cs_sync[1] == 1'b0) begin  // when CS currently active low
                 if (!receiving) begin
-                    receiving <= 1'b1;
-                    bit_count <= 2'd0;
+                    receiving <= 1'b1; // set high on first 
+                    bit_count <= 4'b0;
                 end
 
-                if (spi_clk_rising && bit_count < 2'd4) begin // if SPI clk on a rising edge + only take first 4 bits
-                    shift_reg <= {shift_reg[2:0], mosi};  // Shift in 1 bit
-                    bit_count <= bit_count + 2'd1;
+                if (spi_clk_rising) begin // if SPI clk on a rising edge 
+                    shift_reg <= {shift_reg[6:0], mosi};  // Shift in 1 bit
+                    bit_count <= bit_count + 1;
 
-                    if (bit_count == 2'd3) begin
-                        command       <= {shift_reg[2:0], mosi};  // Capture full 4-bit command (final one with mosi)
+                    if (bit_count == 4'd7) begin // once it hits 7
+                        command       <= {shift_reg[6:0], mosi};  // Capture full 4-bit command (final one with mosi)
                         command_signal <= 1'b1;
-                        bit_count <= 2'd0; // reset 
+                        bit_count <= 4'd0; // reset 
                     end
                 end
             end else begin
                 receiving <= 1'b0;
+                bit_count <= 4'd0; // reset count on CS deassert
             end
         end
     end
